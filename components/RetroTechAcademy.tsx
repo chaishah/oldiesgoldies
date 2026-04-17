@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ModuleId, useAcademyStore } from "@/lib/academyStore";
 
@@ -363,6 +364,12 @@ export default function RetroTechAcademy() {
             <h1 className="mt-2 font-display text-5xl leading-none text-bakelite sm:text-6xl lg:text-7xl">
               Retro-Tech Academy
             </h1>
+            <Link
+              href="/features"
+              className="mt-4 inline-flex min-h-11 items-center rounded border-2 border-walnut bg-paper px-4 text-sm font-bold uppercase text-walnut shadow-[4px_4px_0_rgba(46,33,26,0.18)] transition hover:-translate-y-0.5"
+            >
+              Feature catalog
+            </Link>
           </div>
           <div className="grid gap-2 sm:min-w-80">
             <label
