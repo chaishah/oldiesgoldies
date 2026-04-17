@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #27231f;
+  background: #f5f5dc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(139, 198, 198, 0.25), transparent 28rem),
+    radial-gradient(circle at 86% 18%, rgba(217, 164, 65, 0.22), transparent 24rem),
+    #f5f5dc;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: #27231f;
+  background:
+    linear-gradient(rgba(39, 35, 31, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(39, 35, 31, 0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #a4463f;
+  outline-offset: 3px;
+}
+
+.screen-scanlines {
+  position: relative;
+}
+
+.screen-scanlines::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(46, 33, 26, 0.08) 0,
+    rgba(46, 33, 26, 0.08) 1px,
+    transparent 1px,
+    transparent 5px
+  );
+  mix-blend-mode: multiply;
+}
+
+.paper-texture {
+  background-image:
+    radial-gradient(rgba(90, 55, 38, 0.12) 0.8px, transparent 0.8px),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 248, 230, 0));
+  background-size: 14px 14px, 100% 100%;
+}
