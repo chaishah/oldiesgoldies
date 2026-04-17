@@ -33,3 +33,17 @@
 - Understand that the "Home" button is the "Emergency Exit" to get back to safety if feeling lost.
 - Complete the lesson after successfully returning the screen to the "Front Porch" (Main Menu).
 - Knowledge: Teaches that no matter how "lost" they get, the Home button is their reset switch.
+
+## Channel 05: The "Party Line" (Social Awareness)
+
+- View a simulated public message board or chat on the TV screen.
+- Identify which pieces of information (Phone number, Address, Birthday) are safe or unsafe to share.
+- Practice "Pulling the Curtain" (closing a window) when a stranger asks for private details.
+- Complete the lesson to understand that the internet is a shared space where anyone can overhear.
+
+## Channel 06: The "Snake Oil" (Ad Awareness)
+
+- Identify different buttons on a vintage-style magazine page displayed on the TV.
+- Distinguish between the real "Next" button and a flashing "Winner!" advertisement.
+- Practice ignoring high-pressure language and colorful distractions designed to trick the user.
+- Complete the lesson by successfully navigating to the end of the article without clicking an ad.

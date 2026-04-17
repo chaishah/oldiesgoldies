@@ -3,7 +3,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type ModuleId = "switchboard" | "watch" | "master-key" | "emergency-exit";
+export type ModuleId =
+  | "switchboard"
+  | "watch"
+  | "master-key"
+  | "emergency-exit"
+  | "party-line"
+  | "snake-oil";
 
 type AcademyState = {
   learnerName: string;

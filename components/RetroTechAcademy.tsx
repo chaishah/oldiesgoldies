@@ -6,6 +6,8 @@ import { ModuleId, useAcademyStore } from "@/lib/academyStore";
 
 type GestureId = "tap" | "swipe" | "scroll";
 type MailChoice = "open" | "check" | "ask" | "report";
+type PrivacyAnswer = "safe" | "private";
+type PrivacyItemId = "phone" | "address" | "birthday" | "hobby";
 
 type MailScenario = {
   from: string;
@@ -14,6 +16,13 @@ type MailScenario = {
   correctChoices: MailChoice[];
   success: string;
   failure: string;
+};
+
+type PrivacyItem = {
+  id: PrivacyItemId;
+  label: string;
+  example: string;
+  correctAnswer: PrivacyAnswer;
 };
 
 type LessonModule = {
@@ -76,6 +85,30 @@ const modules: LessonModule[] = [
     action: "Press home",
     copy:
       "If the screen feels crowded or confusing, the Home button is your reset switch. It brings you back to a safe starting place."
+  },
+  {
+    id: "party-line",
+    number: "05",
+    title: "The Party Line",
+    skill: "Social Awareness",
+    metaphor: "Pull the curtain when private details enter the conversation.",
+    badge: "Curtain Puller",
+    dialLabel: "Chat",
+    action: "Sort details",
+    copy:
+      "The internet can feel like a friendly chat, but public spaces are shared. Keep phone numbers, addresses, and birthdays behind the curtain."
+  },
+  {
+    id: "snake-oil",
+    number: "06",
+    title: "The Snake Oil",
+    skill: "Ad Awareness",
+    metaphor: "Ignore the flashy pitch and follow the real Next button.",
+    badge: "Ad Spotter",
+    dialLabel: "Ads",
+    action: "Read safely",
+    copy:
+      "Some pages use bright colors and urgent words to pull attention away from the real path. Look for the steady button, not the loud one."
   }
 ];
 
@@ -127,6 +160,33 @@ const mailScenarios: MailScenario[] = [
   }
 ];
 
+const privacyItems: PrivacyItem[] = [
+  {
+    id: "phone",
+    label: "Phone number",
+    example: "0400 123 456",
+    correctAnswer: "private"
+  },
+  {
+    id: "address",
+    label: "Home address",
+    example: "12 Garden Street",
+    correctAnswer: "private"
+  },
+  {
+    id: "birthday",
+    label: "Birthday",
+    example: "14 July 1952",
+    correctAnswer: "private"
+  },
+  {
+    id: "hobby",
+    label: "Favorite hobby",
+    example: "Listening to old radio shows",
+    correctAnswer: "safe"
+  }
+];
+
 export default function RetroTechAcademy() {
   const {
     learnerName,
@@ -147,6 +207,12 @@ export default function RetroTechAcademy() {
   } | null>(null);
   const [handledMail, setHandledMail] = useState(0);
   const [emergencyExitUsed, setEmergencyExitUsed] = useState(false);
+  const [privacyAnswers, setPrivacyAnswers] = useState<
+    Partial<Record<PrivacyItemId, PrivacyAnswer>>
+  >({});
+  const [curtainPulled, setCurtainPulled] = useState(false);
+  const [articlePage, setArticlePage] = useState(0);
+  const [adWarning, setAdWarning] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -159,6 +225,10 @@ export default function RetroTechAcademy() {
     setMailFeedback(null);
     setHandledMail(0);
     setEmergencyExitUsed(false);
+    setPrivacyAnswers({});
+    setCurtainPulled(false);
+    setArticlePage(0);
+    setAdWarning(null);
   }, [activeModule]);
 
   const selectedModule = moduleById.get(activeModule) ?? modules[0];
@@ -175,6 +245,19 @@ export default function RetroTechAcademy() {
       completeModule("switchboard");
     }
   }, [activeModule, completeModule, completedModules, switchboardGestures.length]);
+
+  useEffect(() => {
+    const privacyComplete =
+      activeModule === "party-line" &&
+      curtainPulled &&
+      privacyItems.every(
+        (item) => privacyAnswers[item.id] === item.correctAnswer
+      );
+
+    if (privacyComplete && !completedModules.includes("party-line")) {
+      completeModule("party-line");
+    }
+  }, [activeModule, completeModule, completedModules, curtainPulled, privacyAnswers]);
 
   const dialRotation = useMemo(() => {
     const index = modules.findIndex((module) => module.id === activeModule);
@@ -240,6 +323,33 @@ export default function RetroTechAcademy() {
 
     setEmergencyExitUsed(true);
     completeModule("emergency-exit");
+  };
+
+  const handlePrivacyAnswer = (
+    itemId: PrivacyItemId,
+    answer: PrivacyAnswer
+  ) => {
+    setPrivacyAnswers((currentAnswers) => ({
+      ...currentAnswers,
+      [itemId]: answer
+    }));
+  };
+
+  const handleArticleNext = () => {
+    setAdWarning(null);
+
+    if (articlePage >= 2) {
+      completeModule("snake-oil");
+      return;
+    }
+
+    setArticlePage((currentPage) => currentPage + 1);
+  };
+
+  const handleAdClick = () => {
+    setAdWarning(
+      "That shiny Winner button was the snake oil pitch. Leave it alone and use the plain Next button."
+    );
   };
 
   return (
@@ -333,10 +443,18 @@ export default function RetroTechAcademy() {
                         mailIndex={mailIndex}
                         handledMail={handledMail}
                         emergencyExitUsed={emergencyExitUsed}
+                        privacyAnswers={privacyAnswers}
+                        curtainPulled={curtainPulled}
+                        articlePage={articlePage}
+                        adWarning={adWarning}
                         onSwitchboardGesture={handleSwitchboardGesture}
                         onMailChoice={handleMailChoice}
                         onNextMail={handleNextMail}
                         onMasterKeyChoice={handleMasterKeyChoice}
+                        onPrivacyAnswer={handlePrivacyAnswer}
+                        onCurtainPull={() => setCurtainPulled(true)}
+                        onArticleNext={handleArticleNext}
+                        onAdClick={handleAdClick}
                       />
 
                       <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
@@ -596,10 +714,18 @@ function LessonGame({
   mailIndex,
   handledMail,
   emergencyExitUsed,
+  privacyAnswers,
+  curtainPulled,
+  articlePage,
+  adWarning,
   onSwitchboardGesture,
   onMailChoice,
   onNextMail,
-  onMasterKeyChoice
+  onMasterKeyChoice,
+  onPrivacyAnswer,
+  onCurtainPull,
+  onArticleNext,
+  onAdClick
 }: {
   module: LessonModule;
   gameStep: number;
@@ -612,10 +738,18 @@ function LessonGame({
   mailIndex: number;
   handledMail: number;
   emergencyExitUsed: boolean;
+  privacyAnswers: Partial<Record<PrivacyItemId, PrivacyAnswer>>;
+  curtainPulled: boolean;
+  articlePage: number;
+  adWarning: string | null;
   onSwitchboardGesture: (gesture: GestureId) => void;
   onMailChoice: (choice: MailChoice) => void;
   onNextMail: () => void;
   onMasterKeyChoice: () => void;
+  onPrivacyAnswer: (itemId: PrivacyItemId, answer: PrivacyAnswer) => void;
+  onCurtainPull: () => void;
+  onArticleNext: () => void;
+  onAdClick: () => void;
 }) {
   if (module.id === "switchboard") {
     return (
@@ -642,6 +776,30 @@ function LessonGame({
 
   if (module.id === "emergency-exit") {
     return <EmergencyExitGame emergencyExitUsed={emergencyExitUsed} />;
+  }
+
+  if (module.id === "party-line") {
+    return (
+      <PartyLineGame
+        answers={privacyAnswers}
+        curtainPulled={curtainPulled}
+        isComplete={isComplete}
+        onAnswer={onPrivacyAnswer}
+        onCurtainPull={onCurtainPull}
+      />
+    );
+  }
+
+  if (module.id === "snake-oil") {
+    return (
+      <SnakeOilGame
+        adWarning={adWarning}
+        articlePage={articlePage}
+        isComplete={isComplete}
+        onAdClick={onAdClick}
+        onNext={onArticleNext}
+      />
+    );
   }
 
   return (
@@ -728,6 +886,183 @@ function EmergencyExitGame({
           </p>
           <p className="mt-3 font-display text-3xl text-bakelite">Find Home</p>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function PartyLineGame({
+  answers,
+  curtainPulled,
+  isComplete,
+  onAnswer,
+  onCurtainPull
+}: {
+  answers: Partial<Record<PrivacyItemId, PrivacyAnswer>>;
+  curtainPulled: boolean;
+  isComplete: boolean;
+  onAnswer: (itemId: PrivacyItemId, answer: PrivacyAnswer) => void;
+  onCurtainPull: () => void;
+}) {
+  return (
+    <div className="mt-8 grid gap-4 rounded border-2 border-bakelite bg-paper/75 p-4 lg:grid-cols-[1fr_18rem]">
+      <section className="rounded border-2 border-walnut bg-cream p-5">
+        <p className="text-sm font-bold uppercase tracking-[0.16em] text-cherry">
+          Public message board
+        </p>
+        <div className="mt-4 grid gap-3">
+          <div className="rounded border-2 border-walnut bg-paper p-3">
+            <p className="text-sm font-bold text-bakelite">Neighbor Pat</p>
+            <p className="mt-1 text-sm leading-6 text-ink">
+              Lovely weather today. What do you enjoy doing online?
+            </p>
+          </div>
+          <div className="rounded border-2 border-cherry bg-cherry/10 p-3">
+            <p className="text-sm font-bold text-bakelite">Unknown Visitor</p>
+            <p className="mt-1 text-sm leading-6 text-ink">
+              Before we chat, please post your phone number, address, and
+              birthday here.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onCurtainPull}
+            disabled={curtainPulled || isComplete}
+            className={`min-h-14 rounded border-2 border-bakelite px-4 text-left font-bold uppercase shadow-[4px_4px_0_rgba(46,33,26,0.25)] transition ${
+              curtainPulled || isComplete
+                ? "bg-mustard/40 text-bakelite"
+                : "bg-cherry text-paper hover:-translate-y-0.5"
+            }`}
+          >
+            {curtainPulled || isComplete ? "Curtain pulled" : "Pull the curtain"}
+          </button>
+        </div>
+      </section>
+
+      <aside className="grid gap-3">
+        <p className="text-sm font-bold uppercase tracking-[0.16em] text-walnut">
+          Safe to share?
+        </p>
+        {privacyItems.map((item) => {
+          const selected = answers[item.id];
+          const correct = selected === item.correctAnswer;
+
+          return (
+            <div
+              key={item.id}
+              className={`rounded border-2 p-3 ${
+                correct
+                  ? "border-walnut bg-mustard/30"
+                  : "border-walnut bg-paper"
+              }`}
+            >
+              <p className="font-bold text-bakelite">{item.label}</p>
+              <p className="mt-1 text-sm text-walnut">{item.example}</p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {(["safe", "private"] as PrivacyAnswer[]).map((answer) => (
+                  <button
+                    key={answer}
+                    type="button"
+                    onClick={() => onAnswer(item.id, answer)}
+                    disabled={isComplete}
+                    className={`min-h-10 rounded border-2 px-2 text-xs font-bold uppercase transition ${
+                      selected === answer
+                        ? "border-cherry bg-cherry text-paper"
+                        : "border-walnut bg-cream text-walnut hover:bg-mustard/20"
+                    }`}
+                  >
+                    {answer}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </aside>
+    </div>
+  );
+}
+
+function SnakeOilGame({
+  adWarning,
+  articlePage,
+  isComplete,
+  onAdClick,
+  onNext
+}: {
+  adWarning: string | null;
+  articlePage: number;
+  isComplete: boolean;
+  onAdClick: () => void;
+  onNext: () => void;
+}) {
+  const pages = [
+    {
+      title: "How to Read a Page",
+      body: "Look for steady navigation. Real buttons usually sit near the article and use plain words."
+    },
+    {
+      title: "Ignore the Shouting",
+      body: "Flashing prizes and countdowns are trying to hurry you. Slow reading is safer reading."
+    },
+    {
+      title: "Find the Real Path",
+      body: "The safe way forward is the simple Next button at the bottom of the article."
+    }
+  ];
+  const currentPage = pages[articlePage] ?? pages[pages.length - 1];
+
+  return (
+    <div className="mt-8 rounded border-2 border-bakelite bg-paper/75 p-4">
+      <div className="grid gap-4 rounded border-2 border-walnut bg-cream p-5 lg:grid-cols-[1fr_16rem]">
+        <article className="min-h-80">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-cherry">
+            Magazine page {Math.min(articlePage + 1, pages.length)} / {pages.length}
+          </p>
+          <h3 className="mt-3 font-display text-4xl leading-tight text-bakelite">
+            {isComplete ? "Article finished safely" : currentPage.title}
+          </h3>
+          <p className="mt-4 text-lg leading-8 text-ink">
+            {isComplete
+              ? "You reached the end without buying the snake oil. The plain button was the right trail."
+              : currentPage.body}
+          </p>
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={isComplete}
+            className="mt-8 min-h-12 rounded border-2 border-bakelite bg-robin px-5 font-bold uppercase text-bakelite shadow-[4px_4px_0_rgba(46,33,26,0.25)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+          >
+            {articlePage >= 2 ? "Finish article" : "Next"}
+          </button>
+        </article>
+
+        <aside className="grid gap-3">
+          <button
+            type="button"
+            onClick={onAdClick}
+            disabled={isComplete}
+            className="min-h-28 rounded border-4 border-cherry bg-mustard p-4 text-center font-display text-3xl leading-tight text-bakelite shadow-[5px_5px_0_rgba(46,33,26,0.3)] transition hover:rotate-1 disabled:opacity-60"
+          >
+            Winner! Click now!
+          </button>
+          <button
+            type="button"
+            onClick={onAdClick}
+            disabled={isComplete}
+            className="min-h-20 rounded border-2 border-bakelite bg-cherry px-4 font-bold uppercase text-paper transition hover:-translate-y-0.5 disabled:opacity-60"
+          >
+            Limited time offer
+          </button>
+          {adWarning ? (
+            <div className="rounded border-2 border-cherry bg-cherry/10 p-3">
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-cherry">
+                Nice pause
+              </p>
+              <p className="mt-2 text-sm leading-6 text-ink">{adWarning}</p>
+            </div>
+          ) : null}
+        </aside>
       </div>
     </div>
   );
@@ -850,7 +1185,7 @@ function ProgressWallet({
       <h2 className="mt-2 font-display text-3xl text-bakelite">
         {learnerName.trim() || "Guest Learner"}
       </h2>
-      <div className="mt-5 grid grid-cols-4 gap-2">
+      <div className="mt-5 grid grid-cols-3 gap-2">
         {modules.map((module) => {
           const complete = completedModules.includes(module.id);
 
