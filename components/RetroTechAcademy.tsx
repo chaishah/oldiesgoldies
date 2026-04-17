@@ -64,6 +64,18 @@ const modules: LessonModule[] = [
     action: "Lock the door",
     copy:
       "A strong password is like a unique house key. Use a different one for each important account and keep private details off shared conversations."
+  },
+  {
+    id: "emergency-exit",
+    number: "04",
+    title: "The Emergency Exit",
+    skill: "Navigation Safety",
+    metaphor: "Find the Home button and return to the Front Porch.",
+    badge: "Home Finder",
+    dialLabel: "Home",
+    action: "Press home",
+    copy:
+      "If the screen feels crowded or confusing, the Home button is your reset switch. It brings you back to a safe starting place."
   }
 ];
 
@@ -134,6 +146,7 @@ export default function RetroTechAcademy() {
     message: string;
   } | null>(null);
   const [handledMail, setHandledMail] = useState(0);
+  const [emergencyExitUsed, setEmergencyExitUsed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -145,6 +158,7 @@ export default function RetroTechAcademy() {
     setMailIndex(0);
     setMailFeedback(null);
     setHandledMail(0);
+    setEmergencyExitUsed(false);
   }, [activeModule]);
 
   const selectedModule = moduleById.get(activeModule) ?? modules[0];
@@ -219,6 +233,15 @@ export default function RetroTechAcademy() {
     completeModule("master-key");
   };
 
+  const handleHomePress = () => {
+    if (selectedModule.id !== "emergency-exit") {
+      return;
+    }
+
+    setEmergencyExitUsed(true);
+    completeModule("emergency-exit");
+  };
+
   return (
     <main className="min-h-screen overflow-hidden px-4 py-5 font-mono sm:px-6 lg:px-8">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-5 lg:min-h-[calc(100vh-2.5rem)]">
@@ -251,6 +274,24 @@ export default function RetroTechAcademy() {
         <div className="grid flex-1 gap-6 xl:grid-cols-[1fr_19rem] xl:items-stretch">
           <section className="rounded-[2rem] bg-wood p-3 shadow-cabinet sm:p-5">
             <div className="h-full rounded-[1.4rem] border-4 border-bakelite/65 bg-cabinet/70 p-3">
+              <div className="mb-3 flex items-center justify-between gap-3 px-2">
+                <div className="flex gap-2" aria-hidden="true">
+                  <span className="size-3 rounded-full bg-cherry shadow-inner" />
+                  <span className="size-3 rounded-full bg-mustard shadow-inner" />
+                  <span className="size-3 rounded-full bg-robin shadow-inner" />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleHomePress}
+                  className={`min-h-12 rounded-full border-4 px-5 font-bold uppercase shadow-[0_5px_0_#2E211A] transition active:translate-y-0.5 ${
+                    selectedModule.id === "emergency-exit"
+                      ? "border-bakelite bg-mustard text-bakelite hover:-translate-y-0.5"
+                      : "border-bakelite/40 bg-paper/40 text-bakelite/50"
+                  }`}
+                >
+                  Home
+                </button>
+              </div>
               <div className="screen-scanlines min-h-[36rem] overflow-hidden rounded-[1.1rem] border-[10px] border-bakelite bg-robin shadow-insetTube">
                 <div className="paper-texture flex min-h-full flex-col p-5 sm:p-7 lg:p-9">
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -291,6 +332,7 @@ export default function RetroTechAcademy() {
                         mailFeedback={mailFeedback}
                         mailIndex={mailIndex}
                         handledMail={handledMail}
+                        emergencyExitUsed={emergencyExitUsed}
                         onSwitchboardGesture={handleSwitchboardGesture}
                         onMailChoice={handleMailChoice}
                         onNextMail={handleNextMail}
@@ -386,7 +428,7 @@ function RemoteControl({
           </div>
         </div>
 
-        <nav className="mt-5 grid grid-cols-3 gap-2" aria-label="Remote channel buttons">
+        <nav className="mt-5 grid grid-cols-2 gap-2" aria-label="Remote channel buttons">
           {modules.map((module) => {
             const complete = completedModules.includes(module.id);
             const active = module.id === activeModule;
@@ -553,6 +595,7 @@ function LessonGame({
   mailFeedback,
   mailIndex,
   handledMail,
+  emergencyExitUsed,
   onSwitchboardGesture,
   onMailChoice,
   onNextMail,
@@ -568,6 +611,7 @@ function LessonGame({
   } | null;
   mailIndex: number;
   handledMail: number;
+  emergencyExitUsed: boolean;
   onSwitchboardGesture: (gesture: GestureId) => void;
   onMailChoice: (choice: MailChoice) => void;
   onNextMail: () => void;
@@ -596,6 +640,10 @@ function LessonGame({
     );
   }
 
+  if (module.id === "emergency-exit") {
+    return <EmergencyExitGame emergencyExitUsed={emergencyExitUsed} />;
+  }
+
   return (
     <div className="mt-8 grid gap-4 rounded border-2 border-bakelite bg-paper/75 p-4 sm:grid-cols-3">
       {["Long", "Unique", "Private"].map((rule, index) => (
@@ -618,6 +666,69 @@ function LessonGame({
           <span className="font-display text-3xl">{rule}</span>
         </button>
       ))}
+    </div>
+  );
+}
+
+function EmergencyExitGame({
+  emergencyExitUsed
+}: {
+  emergencyExitUsed: boolean;
+}) {
+  if (emergencyExitUsed) {
+    return (
+      <div className="mt-8 rounded border-2 border-bakelite bg-paper/75 p-4">
+        <div className="grid min-h-80 place-items-center rounded border-2 border-walnut bg-cream p-6 text-center">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-cherry">
+              Front Porch
+            </p>
+            <h3 className="mt-3 font-display text-5xl text-bakelite">
+              Back Home
+            </h3>
+            <p className="mx-auto mt-4 max-w-xl text-lg leading-8 text-ink">
+              You found the safe way back. When a screen feels too busy, Home is
+              the reset switch.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-8 rounded border-2 border-bakelite bg-paper/75 p-4">
+      <div className="relative min-h-80 overflow-hidden rounded border-2 border-walnut bg-cream p-4">
+        <div className="absolute left-5 top-5 w-64 rotate-[-2deg] border-2 border-bakelite bg-paper p-4 shadow-[5px_5px_0_rgba(46,33,26,0.2)]">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-cherry">
+            Weather
+          </p>
+          <p className="mt-3 font-display text-3xl text-bakelite">Cloudy</p>
+        </div>
+        <div className="absolute right-8 top-12 w-72 rotate-[2deg] border-2 border-bakelite bg-mustard/40 p-4 shadow-[5px_5px_0_rgba(46,33,26,0.2)]">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-cherry">
+            Pop-up
+          </p>
+          <p className="mt-3 text-lg font-bold text-bakelite">
+            A new window opened.
+          </p>
+        </div>
+        <div className="absolute bottom-8 left-16 w-80 rotate-[1deg] border-2 border-bakelite bg-robin/45 p-4 shadow-[5px_5px_0_rgba(46,33,26,0.2)]">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-cherry">
+            Message
+          </p>
+          <p className="mt-3 text-lg leading-7 text-ink">
+            Too many things are on the screen. Use the Home button on the TV
+            frame.
+          </p>
+        </div>
+        <div className="absolute bottom-14 right-10 w-56 rotate-[-3deg] border-2 border-bakelite bg-cherry/15 p-4 shadow-[5px_5px_0_rgba(46,33,26,0.2)]">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-cherry">
+            Lost?
+          </p>
+          <p className="mt-3 font-display text-3xl text-bakelite">Find Home</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -739,7 +850,7 @@ function ProgressWallet({
       <h2 className="mt-2 font-display text-3xl text-bakelite">
         {learnerName.trim() || "Guest Learner"}
       </h2>
-      <div className="mt-5 grid grid-cols-3 gap-3">
+      <div className="mt-5 grid grid-cols-4 gap-2">
         {modules.map((module) => {
           const complete = completedModules.includes(module.id);
 

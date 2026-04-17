@@ -27,3 +27,9 @@
 - Learn that good passwords are long, unique, and private.
 - Complete the lesson after choosing the key password safety ideas.
 
+## Channel 04: The "Emergency Exit" (Navigation)
+- Observe a messy, cluttered set of open windows on the TV screen.
+-Identify and press the physical-looking "Home" button located on the TV frame.
+- Understand that the "Home" button is the "Emergency Exit" to get back to safety if feeling lost.
+- Complete the lesson after successfully returning the screen to the "Front Porch" (Main Menu).
+- Knowledge: Teaches that no matter how "lost" they get, the Home button is their reset switch.
